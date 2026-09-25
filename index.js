@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import { input, confirm } from '@inquirer/prompts';
-import { db, getKnowledgeTable } from './db.js';
+import { db } from './data_db.js';
+import { getKnowledgeTable } from './knowledge_db.js';
 import { generateSqlQuery } from './prompt.js';
 
 async function main() {

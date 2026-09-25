@@ -7,7 +7,7 @@ A command-line chat interface for querying a SQLite database in plain English. Y
 1. You type a question at the `Chat >` prompt.
 2. A data dictionary describing your schema (the `knowledge_table`, see [Database](#database) below) plus your question are sent to an LLM, which returns a raw SQL query ([prompt.js](prompt.js)).
 3. The proposed query is printed and you're asked to confirm before it executes — a human-in-the-loop safety check ([index.js](index.js)).
-4. On confirmation, the query runs against the local SQLite database via [`better-sqlite3`](https://github.com/WiseLibs/better-sqlite3) ([db.js](db.js)), and the results are printed directly as a table. Row data never leaves your machine or gets sent to the LLM.
+4. On confirmation, the query runs against the local SQLite database via [`better-sqlite3`](https://github.com/WiseLibs/better-sqlite3) ([data_db.js](data_db.js)), and the results are printed directly as a table. Row data never leaves your machine or gets sent to the LLM.
 
 The LLM backend is provider-agnostic: it talks to any OpenAI-compatible `/v1` endpoint, so it works with a local model server (Ollama, LM Studio) or Google's Gemini OpenAI-compatible endpoint ([aiclient.js](aiclient.js)).
 
@@ -78,7 +78,7 @@ The app reads and writes a local SQLite file, `app.db`, which is gitignored — 
 
 To set the project up against your own data:
 
-1. **Create/point at a SQLite database.** [db.js](db.js) opens `app.db` in the project root via `better-sqlite3`; either let it create an empty file on first run and add your own `CREATE TABLE` statements there, or point it at an existing SQLite file.
+1. **Create/point at a SQLite database.** [data_db.js](data_db.js) opens `app.db` in the project root via `better-sqlite3`; either let it create an empty file on first run and add your own `CREATE TABLE` statements there, or point it at an existing SQLite file.
 2. **Add a `knowledge_table`.** This is a data dictionary the LLM queries for schema context instead of raw table introspection — one row per column, describing what it means:
 
    ```sql
@@ -90,15 +90,16 @@ To set the project up against your own data:
    );
    ```
 
-   Populate it with one row per table/column. Descriptions can include units, valid values, and gotchas (e.g. "status is an enum: 0=pending, 1=shipped, 2=cancelled") — the more context you give, the more accurate the generated SQL will be. `getKnowledgeTable()` in [db.js](db.js) reads this table and passes it to the LLM on every question.
-3. **Seed your data tables** however suits your project (SQL scripts, a migration tool, `INSERT` statements in `db.js`, etc.). Since `app.db` isn't committed, keep any seed/schema scripts you want to share in version control separately from the database file itself.
+   Populate it with one row per table/column. Descriptions can include units, valid values, and gotchas (e.g. "status is an enum: 0=pending, 1=shipped, 2=cancelled") — the more context you give, the more accurate the generated SQL will be. `getKnowledgeTable()` in [knowledge_db.js](knowledge_db.js) reads this table and passes it to the LLM on every question.
+3. **Seed your data tables** however suits your project (SQL scripts, a migration tool, `INSERT` statements in `data_db.js`, etc.). Since `app.db` isn't committed, keep any seed/schema scripts you want to share in version control separately from the database file itself.
 
 ## Project structure
 
 | File | Purpose |
 | --- | --- |
 | `index.js` | CLI entry point and main chat loop |
-| `db.js` | SQLite connection, schema/knowledge-table setup, schema introspection |
+| `data_db.js` | SQLite connection, data-table (products/stock_movements) schema and seeding |
+| `knowledge_db.js` | Knowledge-table schema, seeding, and schema introspection for the LLM |
 | `aiclient.js` | OpenAI-compatible LLM client factory |
 | `prompt.js` | Prompt template for SQL generation |
 
