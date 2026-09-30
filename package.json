@@ -2,7 +2,7 @@
   "name": "sqlchatcli",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -13,8 +13,10 @@
   "dependencies": {
     "@google/genai": "^2.16.0",
     "@inquirer/prompts": "^8.5.2",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "better-sqlite3": "^13.0.3",
     "dotenv": "^17.4.2",
-    "openai": "^7.4.0"
+    "openai": "^7.4.0",
+    "zod": "^3.25.76"
   }
 }
